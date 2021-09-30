@@ -16,9 +16,11 @@ https://www.kakaobrain.com/blog/64
 # 
 ### Binary -> Category
 1. 마지막 레이어의 activation
+
     tf.keras.layers.Dense(3, activation='softmax')  # sigmoid -> softmax
     
 2. flow_from_directory() 사용 시 class_mode
+
   train_generator = training_datagen.flow_from_directory(
 	TRAINING_DIR,
 	target_size=(150,150),
@@ -27,6 +29,7 @@ https://www.kakaobrain.com/blog/64
 )
 
 3. compile의 loss
+
 'categorical_crossentropy'는 one-hot 용
 'sparse_categorical_crossentropy' 는 integer target 용
 model.compile(loss = 'sparse_categorical_crossentropy', ~~)
