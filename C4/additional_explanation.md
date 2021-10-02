@@ -1,4 +1,23 @@
-# Metrics for 
+# 용어 정리
+ex of Univariate time series
+- Hour by hour temperature
+ex of Multivariate time series
+- Hour by hour weather 
+Imputed data 
+- A projection of unknown (usually past or missing) data
+Seasonality
+- A regular change in shape of the data
+Trend
+- An overall direction for data regardless of direction
+Noise (in time series)
+- Unpredictable changes in time series data
+Autocorrelation
+- Data that follows a predictable shape, even if the scale is different
+Non-stationary time series
+- One that has a disruptive event breaking trend and seasonality 
+
+#
+# Metrics for 서능 평가 
 
 erros = forecasts - actual
 - 제일 간단한 에러 계산식
