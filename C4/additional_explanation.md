@@ -25,7 +25,7 @@ Non-stationary time series
 
 
 #
-# Metrics for 서능 평가 
+# Metrics for 성능 평가 
 
 erros = forecasts - actual
 - 제일 간단한 에러 계산식
@@ -48,3 +48,10 @@ mae = np.abs(errors).mean()
 mape = np.abs(errors / x_valid).mean()
 - mean absolute percentage error 
 - 절댓값 에러와 절댓값 실제 값 사이 평균
+
+
+# Sequence Bias
+Sequnce Bias는 선택이 항목 순서에 영향을 줄 때 생깁니다.
+
+예를 들어 내가 좋아하는 TV 프로그램을 물어보고 "왕좌의 게임", "킬링 이브", "트래블러", "닥터 후"의 순서로 나열하면 '왕좌의 게임'을 선택할 가능성이 더 큽니다. '왕좌'는 여러분이 잘 알고 계시며 가장 먼저 보게 되는 것입니다. 다른 TV 프로그램과 동일하더라도. 따라서 데이터 세트의 데이터를 훈련할 때 시퀀스가 ​​비슷한 방식으로 훈련에 영향을 미치는 것을 원하지 않으므로 섞는 것이 좋습니다.
+
