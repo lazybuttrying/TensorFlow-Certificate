@@ -74,7 +74,13 @@ If you want to amend the learning rate of the optimizer on the fly, after each e
 split an n column window into n-1 columns for features and 1 column for a label
 - dataset = dataset.map(lambda window: (window[:-1], window[-1:]))
 
+
 What does a Lambda layer in a neural network do?
 - Allows you to execute arbitrary code while training
 - axis parameter of tf.expand_dims  : Defines the dimension index at which you will expand the shape of the tensor 
 - x data에는 batch_size, num of time series 뿐이라, RNN을 위해 series dimensionality를 추가하기 위해 이용
+
+Question 8
+Why is MAE a good analytic for measuring accuracy of predictions for time series?
+- 
+It doesn’t heavily punish larger errors like square errors do
