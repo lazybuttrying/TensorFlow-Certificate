@@ -20,6 +20,6 @@ https://www.coursera.org/professional-certificates/tensorflow-in-practice
 -  apply everything you’ve learned throughout the Specialization to build a sunspot prediction model using real-world data
 
 # 
-###+) 추천 후속 강의 
+### +) 추천 후속 강의 
 - https://www.coursera.org/specializations/tensorflow-data-and-deployment?utm_source=deeplearning-ai&utm_medium=institutions&utm_campaign=TF1CourseItem
 - https://www.coursera.org/specializations/tensorflow-advanced-techniques?utm_source=deeplearning-ai&utm_medium=institutions&utm_campaign=TF1CourseItem
