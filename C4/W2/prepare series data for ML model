@@ -1,0 +1,456 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "accelerator": "GPU",
+    "colab": {
+      "name": "C4_W2_Lab_1_features_and_labels.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/lazybuttrying/TensorFlow-Certificate/blob/main/C4/W2/prepare%20series%20data%20for%20ML%20model\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "zX4Kg8DUTKWO"
+      },
+      "source": [
+        "#@title Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+        "# you may not use this file except in compliance with the License.\n",
+        "# You may obtain a copy of the License at\n",
+        "#\n",
+        "# https://www.apache.org/licenses/LICENSE-2.0\n",
+        "#\n",
+        "# Unless required by applicable law or agreed to in writing, software\n",
+        "# distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+        "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+        "# See the License for the specific language governing permissions and\n",
+        "# limitations under the License."
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "eDcwEEXObQ-R"
+      },
+      "source": [
+        "**Note:** This notebook can run using TensorFlow 2.5.0"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "B5eXVdRMw9wA"
+      },
+      "source": [
+        "시계열 데이터는\n",
+        "\n",
+        "feature로 window size를, 즉 30일 단위로 끊는 것\n",
+        "\n",
+        "label로 그 윈도우의 마지막이자 다음번째의 첫번째 값을 사용"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "s6eq-RBcQ_Zr",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "41977fda-32f9-453b-e9aa-5092c510e84c"
+      },
+      "source": [
+        "!pip install tensorflow==2.6.2"
+      ],
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Collecting tensorflow==2.6.2\n",
+            "  Downloading tensorflow-2.6.2-cp37-cp37m-manylinux2010_x86_64.whl (458.3 MB)\n",
+            "\u001b[K     |████████████████████████████████| 458.3 MB 2.6 kB/s \n",
+            "\u001b[?25hRequirement already satisfied: keras-preprocessing~=1.1.2 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (1.1.2)\n",
+            "Collecting tensorflow-estimator<2.7,>=2.6.0\n",
+            "  Downloading tensorflow_estimator-2.6.0-py2.py3-none-any.whl (462 kB)\n",
+            "\u001b[K     |████████████████████████████████| 462 kB 44.0 MB/s \n",
+            "\u001b[?25hRequirement already satisfied: absl-py~=0.10 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (0.12.0)\n",
+            "Collecting keras<2.7,>=2.6.0\n",
+            "  Downloading keras-2.6.0-py2.py3-none-any.whl (1.3 MB)\n",
+            "\u001b[K     |████████████████████████████████| 1.3 MB 45.1 MB/s \n",
+            "\u001b[?25hCollecting tensorboard<2.7,>=2.6.0\n",
+            "  Downloading tensorboard-2.6.0-py3-none-any.whl (5.6 MB)\n",
+            "\u001b[K     |████████████████████████████████| 5.6 MB 43.6 MB/s \n",
+            "\u001b[?25hCollecting clang~=5.0\n",
+            "  Downloading clang-5.0.tar.gz (30 kB)\n",
+            "Requirement already satisfied: protobuf>=3.9.2 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (3.17.3)\n",
+            "Requirement already satisfied: h5py~=3.1.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (3.1.0)\n",
+            "Collecting typing-extensions~=3.7.4\n",
+            "  Downloading typing_extensions-3.7.4.3-py3-none-any.whl (22 kB)\n",
+            "Requirement already satisfied: grpcio<2.0,>=1.37.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (1.41.1)\n",
+            "Requirement already satisfied: termcolor~=1.1.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (1.1.0)\n",
+            "Requirement already satisfied: wheel~=0.35 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (0.37.0)\n",
+            "Requirement already satisfied: gast==0.4.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (0.4.0)\n",
+            "Requirement already satisfied: opt-einsum~=3.3.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (3.3.0)\n",
+            "Requirement already satisfied: numpy~=1.19.2 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (1.19.5)\n",
+            "Collecting wrapt~=1.12.1\n",
+            "  Downloading wrapt-1.12.1.tar.gz (27 kB)\n",
+            "Requirement already satisfied: astunparse~=1.6.3 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (1.6.3)\n",
+            "Requirement already satisfied: google-pasta~=0.2 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (0.2.0)\n",
+            "Collecting flatbuffers~=1.12.0\n",
+            "  Downloading flatbuffers-1.12-py2.py3-none-any.whl (15 kB)\n",
+            "Requirement already satisfied: six~=1.15.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow==2.6.2) (1.15.0)\n",
+            "Requirement already satisfied: cached-property in /usr/local/lib/python3.7/dist-packages (from h5py~=3.1.0->tensorflow==2.6.2) (1.5.2)\n",
+            "Requirement already satisfied: setuptools>=41.0.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (57.4.0)\n",
+            "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (3.3.4)\n",
+            "Requirement already satisfied: tensorboard-data-server<0.7.0,>=0.6.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (0.6.1)\n",
+            "Requirement already satisfied: requests<3,>=2.21.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (2.23.0)\n",
+            "Requirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (1.8.0)\n",
+            "Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (1.0.1)\n",
+            "Requirement already satisfied: google-auth<2,>=1.6.3 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (1.35.0)\n",
+            "Requirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (0.4.6)\n",
+            "Requirement already satisfied: rsa<5,>=3.1.4 in /usr/local/lib/python3.7/dist-packages (from google-auth<2,>=1.6.3->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (4.7.2)\n",
+            "Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.7/dist-packages (from google-auth<2,>=1.6.3->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (0.2.8)\n",
+            "Requirement already satisfied: cachetools<5.0,>=2.0.0 in /usr/local/lib/python3.7/dist-packages (from google-auth<2,>=1.6.3->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (4.2.4)\n",
+            "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.7/dist-packages (from google-auth-oauthlib<0.5,>=0.4.1->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (1.3.0)\n",
+            "Requirement already satisfied: importlib-metadata in /usr/local/lib/python3.7/dist-packages (from markdown>=2.6.8->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (4.8.2)\n",
+            "Requirement already satisfied: pyasn1<0.5.0,>=0.4.6 in /usr/local/lib/python3.7/dist-packages (from pyasn1-modules>=0.2.1->google-auth<2,>=1.6.3->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (0.4.8)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (3.0.4)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (1.24.3)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (2021.10.8)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (2.10)\n",
+            "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.7/dist-packages (from requests-oauthlib>=0.7.0->google-auth-oauthlib<0.5,>=0.4.1->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (3.1.1)\n",
+            "Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.7/dist-packages (from importlib-metadata->markdown>=2.6.8->tensorboard<2.7,>=2.6.0->tensorflow==2.6.2) (3.6.0)\n",
+            "Building wheels for collected packages: clang, wrapt\n",
+            "  Building wheel for clang (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for clang: filename=clang-5.0-py3-none-any.whl size=30692 sha256=56c38080758133908828e2e8562a49c01c85d1ca87d15b1d6bb601caaa0a9d4a\n",
+            "  Stored in directory: /root/.cache/pip/wheels/98/91/04/971b4c587cf47ae952b108949b46926f426c02832d120a082a\n",
+            "  Building wheel for wrapt (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for wrapt: filename=wrapt-1.12.1-cp37-cp37m-linux_x86_64.whl size=68721 sha256=05dfc7ff1cf433b97ebba3b26d747f238cc5c689c32f216b682b3498ef13f329\n",
+            "  Stored in directory: /root/.cache/pip/wheels/62/76/4c/aa25851149f3f6d9785f6c869387ad82b3fd37582fa8147ac6\n",
+            "Successfully built clang wrapt\n",
+            "Installing collected packages: typing-extensions, wrapt, tensorflow-estimator, tensorboard, keras, flatbuffers, clang, tensorflow\n",
+            "  Attempting uninstall: typing-extensions\n",
+            "    Found existing installation: typing-extensions 3.10.0.2\n",
+            "    Uninstalling typing-extensions-3.10.0.2:\n",
+            "      Successfully uninstalled typing-extensions-3.10.0.2\n",
+            "  Attempting uninstall: wrapt\n",
+            "    Found existing installation: wrapt 1.13.3\n",
+            "    Uninstalling wrapt-1.13.3:\n",
+            "      Successfully uninstalled wrapt-1.13.3\n",
+            "  Attempting uninstall: tensorflow-estimator\n",
+            "    Found existing installation: tensorflow-estimator 2.7.0\n",
+            "    Uninstalling tensorflow-estimator-2.7.0:\n",
+            "      Successfully uninstalled tensorflow-estimator-2.7.0\n",
+            "  Attempting uninstall: tensorboard\n",
+            "    Found existing installation: tensorboard 2.7.0\n",
+            "    Uninstalling tensorboard-2.7.0:\n",
+            "      Successfully uninstalled tensorboard-2.7.0\n",
+            "  Attempting uninstall: keras\n",
+            "    Found existing installation: keras 2.7.0\n",
+            "    Uninstalling keras-2.7.0:\n",
+            "      Successfully uninstalled keras-2.7.0\n",
+            "  Attempting uninstall: flatbuffers\n",
+            "    Found existing installation: flatbuffers 2.0\n",
+            "    Uninstalling flatbuffers-2.0:\n",
+            "      Successfully uninstalled flatbuffers-2.0\n",
+            "  Attempting uninstall: tensorflow\n",
+            "    Found existing installation: tensorflow 2.7.0\n",
+            "    Uninstalling tensorflow-2.7.0:\n",
+            "      Successfully uninstalled tensorflow-2.7.0\n",
+            "Successfully installed clang-5.0 flatbuffers-1.12 keras-2.6.0 tensorboard-2.6.0 tensorflow-2.6.2 tensorflow-estimator-2.6.0 typing-extensions-3.7.4.3 wrapt-1.12.1\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "BOjujz601HcS",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "73a69e1c-9d36-4045-e09d-e2c89f0c10ca"
+      },
+      "source": [
+        "import tensorflow as tf\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "print(tf.__version__)"
+      ],
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "2.6.2\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "asEdslR_05O_",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "3976cefc-4059-44b3-db93-34bafd37f09f"
+      },
+      "source": [
+        "dataset = tf.data.Dataset.range(10)\n",
+        "for val in dataset:\n",
+        "   print(val.numpy())"
+      ],
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "0\n",
+            "1\n",
+            "2\n",
+            "3\n",
+            "4\n",
+            "5\n",
+            "6\n",
+            "7\n",
+            "8\n",
+            "9\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Lrv_ghSt1lgQ",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "c9f42931-a471-41e9-e9a7-969a97f006dc"
+      },
+      "source": [
+        "dataset = tf.data.Dataset.range(10)\n",
+        "# 5칸씩 잡아가면서 봄. 다 끝나면 한 칸씩 이동\n",
+        "# 끝까지 보려고 하기에 윈도우 사이즈보다 작은 데이터도 다룸\n",
+        "dataset = dataset.window(5, shift=1)\n",
+        "for window_dataset in dataset:\n",
+        "  print(\"\\n->\", end=\" \")\n",
+        "  for val in window_dataset:\n",
+        "    print(val.numpy(), end=\" \")\n"
+      ],
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "-> 0 1 2 3 4 \n",
+            "-> 1 2 3 4 5 \n",
+            "-> 2 3 4 5 6 \n",
+            "-> 3 4 5 6 7 \n",
+            "-> 4 5 6 7 8 \n",
+            "-> 5 6 7 8 9 \n",
+            "-> 6 7 8 9 \n",
+            "-> 7 8 9 \n",
+            "-> 8 9 \n",
+            "-> 9 "
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "QLEq6MG-2DN2",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "e0266579-ce04-4125-9e25-e82514600fcc"
+      },
+      "source": [
+        "dataset = tf.data.Dataset.range(10)\n",
+        "# drop_remainder : truncate remainder \n",
+        "# 딱 그 때의 window에 담기는 것만 추출\n",
+        "dataset = dataset.window(5, shift=1, drop_remainder=True)\n",
+        "for window_dataset in dataset:\n",
+        "  print(\"\\n->\", end=\" \")\n",
+        "  for val in window_dataset:\n",
+        "    print(val.numpy(), end=\" \")"
+      ],
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "-> 0 1 2 3 4 \n",
+            "-> 1 2 3 4 5 \n",
+            "-> 2 3 4 5 6 \n",
+            "-> 3 4 5 6 7 \n",
+            "-> 4 5 6 7 8 \n",
+            "-> 5 6 7 8 9 "
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PJ9CAHlJ2ODe",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "ac57f46a-a0e1-43dc-e6a0-dfd0b23e4d08"
+      },
+      "source": [
+        "dataset = tf.data.Dataset.range(10)\n",
+        "# winow.numpy()로 리스트 안에 감싸기\n",
+        "# 그래서 10개의 데이터를 5칸씩 1 step 단위로 보니 총 6번.\n",
+        "dataset = dataset.window(5, shift=1, drop_remainder=True)\n",
+        "dataset = dataset.flat_map(lambda window: window.batch(5))\n",
+        "for window in dataset:\n",
+        "  print(\"\\n->\", end=\" \")\n",
+        "  print(window.numpy(), end=\"\")\n"
+      ],
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "-> [0 1 2 3 4]\n",
+            "-> [1 2 3 4 5]\n",
+            "-> [2 3 4 5 6]\n",
+            "-> [3 4 5 6 7]\n",
+            "-> [4 5 6 7 8]\n",
+            "-> [5 6 7 8 9]"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "DryEZ2Mz2nNV",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "c9737d02-79a1-4b71-b103-dd7bcc8bad82"
+      },
+      "source": [
+        "dataset = tf.data.Dataset.range(10)\n",
+        "dataset = dataset.window(5, shift=1, drop_remainder=True)\n",
+        "dataset = dataset.flat_map(lambda window: window.batch(5))\n",
+        "dataset = dataset.map(lambda window: (window[:-1], window[-1:]))\n",
+        "# dataset = dataset.shuffle(buffer_size=10) # 각 행의 순서를 섞음\n",
+        "\n",
+        "# 마지막 하나가 바로 next value이기에 label y로 설정\n",
+        "# 나머지는 window 크기를 4로 생각하여 x\n",
+        "for x,y in dataset:\n",
+        "  print(\"\\n->\", end=\" \")\n",
+        "  print(x.numpy(), y.numpy(), end=\"\")"
+      ],
+      "execution_count": 19,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "-> [0 1 2 3] [4]\n",
+            "-> [1 2 3 4] [5]\n",
+            "-> [2 3 4 5] [6]\n",
+            "-> [3 4 5 6] [7]\n",
+            "-> [4 5 6 7] [8]\n",
+            "-> [5 6 7 8] [9]"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Wa0PNwxMGapy",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "a2c65a2f-0b6f-40d5-f427-328601d56ded"
+      },
+      "source": [
+        "dataset = tf.data.Dataset.range(10)\n",
+        "#dataset = tf.data.Dataset.from_tensor_slices(series)\n",
+        "\n",
+        "dataset = dataset.window(5, shift=1, drop_remainder=True)\n",
+        "dataset = dataset.flat_map(lambda window: window.batch(5)) # window.batch(window_size+1)\n",
+        "dataset = dataset.shuffle(buffer_size=10) # shuffle(suffle_buffer)\n",
+        "dataset = dataset.map(lambda window: (window[:-1], window[-1:])) # split x and y\n",
+        "dataset = dataset.batch(2).prefetch(1) # 총 6개의 x를 각 2개의 크기를 가진 소집단으로 분리\n",
+        "# 그래서 총 3개의 x와 y가 생성됨\n",
+        "for x,y in dataset:\n",
+        "  print(\"x = \", x.numpy())\n",
+        "  print(\"y = \", y.numpy())"
+      ],
+      "execution_count": 24,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "x =  [[5 6 7 8]\n",
+            " [3 4 5 6]]\n",
+            "y =  [[9]\n",
+            " [7]]\n",
+            "x =  [[2 3 4 5]\n",
+            " [1 2 3 4]]\n",
+            "y =  [[6]\n",
+            " [5]]\n",
+            "x =  [[4 5 6 7]\n",
+            " [0 1 2 3]]\n",
+            "y =  [[8]\n",
+            " [4]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "DgMMqS082X_F"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
